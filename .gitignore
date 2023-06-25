@@ -1,0 +1,6 @@
+# Ignore the venv dir which we place in the project root for cli ease and repeatability
+venv
+
+.hypothesis
+
+.mypy_cache
