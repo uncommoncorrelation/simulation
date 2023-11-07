@@ -4,6 +4,9 @@ from enum import Enum, Flag, auto
 
 
 class GRAPH(Flag):
+    """
+    Enumeration to describe the total amount of graph elemnts available, across nodes and relationships.
+    """
 
     def __new__(cls, singular, plural):
         obj = object.__new__(cls)
@@ -57,9 +60,13 @@ class Material(BaseModel):
     name: str
 
 
-
-
 class Composition(BaseModel):
+    """
+    The backbone element of the graph, relating one thing to another in a set / sub-set manner.
+    
+    At this level, composition doesn't 'care' about being within the context of a tree-like or a matrix-like compositional structure.
+    """
+    
     of: Thing
     by: Thing
 
