@@ -52,11 +52,35 @@ RELATIONSHIPS = GRAPH.COMPOSITION | GRAPH.PROVENANCE | GRAPH.OPERATION | GRAPH.C
 HIGHER = GRAPH.SYSTEM | GRAPH.CORRESPONDANCE | GRAPH.ACTIVITY | GRAPH.INFLUENCE
 
 
+#class CONCEPT(Flag):
+#    """
+#    Enumeration to describe the concepts within the graph.
+#    """
+#
+#    def __new__(cls, reference):
+#        obj = object.__new__(cls)
+#        obj._value_ = len(cls.__members__) + 1
+#        obj._name_ = reference
+#        obj.name = reference
+#        return obj
+#
+#    OF = "of"
+#    BY = "by"
+#    NAME = "name"
+#
+
+
 class Thing(BaseModel):
+    """
+    The most basic element from which all else is described and composed.
+    """
     name: str
 
 
 class Material(BaseModel):
+    """
+    The element used to describe the property of a thing when it cannot be de-composed further.
+    """
     name: str
 
 
@@ -141,9 +165,18 @@ class Activity(BaseModel):
         return values
     #todo validate operation
 
+
 class Influence(BaseModel):
     system: System
     containing: Union[Activity | Passivity] = Field(..., discriminator='influence_type')
+
+    @property
+    def of(self):
+        return self.containing.of
+
+    @property
+    def by(self):
+        return self.containing.by
 
 
 class Domain(BaseModel):
@@ -157,6 +190,11 @@ class Domain(BaseModel):
     operations: tuple[Operation, ...] = [] # the total of thing-thing influence relationships in systems
     correspondances: tuple[ProvOpCorrespondance, ...] = [] # the total of provenance-operation correspondances
     influences: tuple[Influence, ...] = [] # the total of thing-thing influence relationships in systems
+    activities: tuple[Activity, ...] = []
+    passivities: tuple[Passivity, ...] = []
+
+    def get_element_container(self, RELATIONSHIPS):
+        return getattr(self, RELATIONSHIPS.plural)
 
 
 def newDomain():
@@ -171,6 +209,8 @@ def newDomain():
         operations = (),
         correspondences = (),
         influences = (),
+        activities = (),
+        passivities = (),
 
 )
 
@@ -210,10 +250,6 @@ def addSystem(domain: Domain, name: str):
     return addNode(domain = domain, element = GRAPH.SYSTEM, name = name)
 
 
-
-        
-    
-
 def addProvenance(domain: Domain, of: Thing, by: Thing):
     return Domain(
         things = domain.things, 
@@ -228,7 +264,9 @@ def addProvenance(domain: Domain, of: Thing, by: Thing):
         operations = domain.operations,
         correspondences = domain.correspondances, 
         systems = domain.systems,
-        influences = domain.influences
+        influences = domain.influences,
+        activities = domain.activities,
+        passivities = domain.passivities,
         )
 
 
@@ -246,7 +284,9 @@ def addOperation(domain: Domain, of: Thing, by: Thing):
         ),),
         correspondences = domain.correspondances, 
         systems = domain.systems,
-        influences = domain.influences
+        influences = domain.influences,
+        activities = domain.activities,
+        passivities = domain.passivities,
         )
 
 
@@ -268,7 +308,9 @@ def addPassiveInfluence(domain: Domain, system: System, of: Thing, by: Thing):
                 of = of,
                 by = by,
             )
-        ),)
+        ),),
+        activities = domain.activities,
+        passivities = domain.passivities,
     )
 
 
@@ -291,7 +333,9 @@ def addActiveInfluence(domain: Domain, system: System, of: Thing, by: Thing, ope
                 by = by,
                 operations = operations
             )
-        ),)
+        ),),
+        activities = domain.activities,
+        passivities = domain.passivities,
     )
 
 
@@ -313,7 +357,9 @@ def composeThing(domain: Domain, of: Thing, by: Thing):
         provenances = domain.provenances,
         operations = domain.operations,
         correspondences = domain.correspondances, 
-        influences = domain.influences
+        influences = domain.influences,
+        activities = domain.activities,
+        passivities = domain.passivities,
     )
 
 
@@ -337,6 +383,8 @@ def embodyThing(domain: Domain, of: Thing, by: Material):
         provenances = domain.provenances,
         operations = domain.operations,
         systems = domain.systems,
-        influences = domain.influences
+        influences = domain.influences,
+        activities = domain.activities,
+        passivities = domain.passivities,
         )
     
