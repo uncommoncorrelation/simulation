@@ -52,23 +52,6 @@ RELATIONSHIPS = GRAPH.COMPOSITION | GRAPH.PROVENANCE | GRAPH.OPERATION | GRAPH.C
 HIGHER = GRAPH.SYSTEM | GRAPH.CORRESPONDANCE | GRAPH.ACTIVITY | GRAPH.INFLUENCE
 
 
-#class CONCEPT(Flag):
-#    """
-#    Enumeration to describe the concepts within the graph.
-#    """
-#
-#    def __new__(cls, reference):
-#        obj = object.__new__(cls)
-#        obj._value_ = len(cls.__members__) + 1
-#        obj._name_ = reference
-#        obj.name = reference
-#        return obj
-#
-#    OF = "of"
-#    BY = "by"
-#    NAME = "name"
-#
-
 
 class Thing(BaseModel):
     """
@@ -123,7 +106,6 @@ class Operation(BaseModel):
 
     @root_validator
     def act_loop(cls, values):
-        print("values", values)
         if values['of'] == values['by']:
             raise ValueError('A thing must not act upon itself')
         return values

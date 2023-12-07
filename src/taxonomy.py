@@ -28,25 +28,28 @@ class Taxonomy(BaseModel):
     subsequent_tiers: tuple[int, ...] = ()
     subsequent_tier_binds: tuple[SubsequentTierBind, ...] = ()
     #children_map: tuple[tuple[int,...], ...] TODO
-
+    
+    @property
     def name(self):
         return self.taxonomy_head.name
     
     @overload
     def get_children(self):
-        return self.first_tier
+        ...
     
-    @overload
-    def get_children(self, target: TaxonomicItem):
+    def get_children(self, target: Optional[TaxonomicItem] = None):
+        if target == None:
+            # Early return to to supply the two simple cases: initial and first tier
+            print("LEN: ", len(self.items))
+            return self.items[self.first_tier[0]: self.first_tier[-1]] if len(self.items) else ()
         for item in self.items:
             if item == target:
                 children = []
-                for sub in self.subsequent_tier_bind:
+                for sub in self.subsequent_tier_binds:
                     if sub.parent == target:
-                        children.add(sub.child)
+                        children.append(sub.child)
+                print("CHILDREN: ", children)
                 return tuple(children)
-        return ()
-
     
 
 def create_taxonomy(name: str):
@@ -68,13 +71,12 @@ def add_taxonomic_item(taxonomy: Taxonomy, name: str, parent: Optional[Taxonomic
             # Early return to stop a taxonomy from becoming corrupted with items from other taxonomies
             return taxonomy
     item = TaxonomicItem(name = name)
-    print(item)
     return Taxonomy(
         taxonomy_head = TaxonomyHead(
-            name = taxonomy.name()
+            name = taxonomy.name
         ),
         items = taxonomy.items + (item,),
-        first_tier = taxonomy.first_tier if parent else taxonomy.first_tier + (len(taxonomy.items) + 1,),
+        first_tier = taxonomy.first_tier if parent else taxonomy.first_tier + (len(taxonomy.items) + 1,) if len(taxonomy.items) else (0,),
         first_tier_binds = taxonomy.first_tier_binds if parent else taxonomy.first_tier_binds + (
             FirstTierBind(
                 taxonomy = taxonomy.taxonomy_head,
