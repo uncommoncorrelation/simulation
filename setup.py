@@ -9,7 +9,7 @@ setup(
     python_requires=">=3.7, <4",
     install_requires=["pydantic"],
     extras_require={  # Optional
-        "dev": ["pip-tools", "hypothesis[cli]", "mypy", "flake8", "pre-commit", "erdantic"]
+        "dev": ["pip-tools", "mypy"]
     },
     package_dir={"": "src"},
 )
