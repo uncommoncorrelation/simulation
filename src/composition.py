@@ -92,6 +92,7 @@ class Embodiment(BaseModel):
 class Provenance(BaseModel):
     of: Thing # e.g a good
     by: Thing # e.g. a truck
+    
 
     @root_validator
     def act_loop(cls, values):
@@ -177,6 +178,19 @@ class Domain(BaseModel):
 
     def get_element_container(self, RELATIONSHIPS):
         return getattr(self, RELATIONSHIPS.plural)
+
+    def get_children(self, target: Thing):
+
+        def targetter(composiion, target):
+            if composiion.parent == target:
+                return composiion.child
+        return tuple(map(targetter, self.compositions, repeat(target,)))
+
+    def get_decendents(self, target: Optional[TaxonomicItem] = None):
+        if target == None:
+            # Early return to to supply the two simple cases: initial and first tier
+            return self.items
+        return tuple(map(self.get_children, self.items))
 
 
 def newDomain():
@@ -322,10 +336,20 @@ def addActiveInfluence(domain: Domain, system: System, of: Thing, by: Thing, ope
 
 
 def composeThing(domain: Domain, of: Thing, by: Thing):
+    # early returns
     if not of in domain.things:
+        # stop a composition across domains
         return domain
     if not by in domain.things:
+        # stop a composition across domains
         return domain
+    if of == by:
+        # stop self-composition
+        return domain
+    for c in domain.compositions: # expensive loop: consider a tuple of parents
+        if by == c.by:
+            # enforce a tree by stopping many-parents of things
+            return domain
     return Domain(
         things = domain.things, 
         materials = domain.materials,

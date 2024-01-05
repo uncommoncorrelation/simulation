@@ -9,7 +9,7 @@ setup(
     python_requires=">=3.7, <4",
     install_requires=["pydantic"],
     extras_require={  # Optional
-        "dev": ["pip-tools", "mypy"]
+        "dev": ["pip-tools", "mypy", "rich"]
     },
     package_dir={"": "src"},
 )
